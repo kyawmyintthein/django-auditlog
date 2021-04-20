@@ -28,7 +28,12 @@ def log_update(sender, instance, **kwargs):
     """
     if instance.pk is not None:
         try:
-            old = sender.objects.get(pk=instance.pk)
+            # Support multiple database while retriveing old data
+            db = instance._state.db
+            if db is None or db == '':
+                old = sender.objects.get(pk=instance.pk)
+            else:
+                old = sender.objects.using(db).get(pk=instance.pk)
         except sender.DoesNotExist:
             pass
         else:
